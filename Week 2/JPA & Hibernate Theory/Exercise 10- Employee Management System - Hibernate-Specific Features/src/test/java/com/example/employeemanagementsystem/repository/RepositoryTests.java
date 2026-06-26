@@ -1,0 +1,318 @@
+package com.example.employeemanagementsystem.repository;
+
+import com.example.employeemanagementsystem.model.Department;
+import com.example.employeemanagementsystem.model.Employee;
+import com.example.employeemanagementsystem.projection.EmployeeProjection;
+import com.example.employeemanagementsystem.projection.EmployeeDetailProjection;
+import com.example.employeemanagementsystem.projection.EmployeeDto;
+import com.example.employeemanagementsystem.projection.DepartmentProjection;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+class RepositoryTests {
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    private Department hrDepartment;
+    private Department itDepartment;
+    private Employee alice;
+    private Employee bob;
+
+    @BeforeEach
+    void setUp() {
+        // Clear database before each test
+        employeeRepository.deleteAll();
+        departmentRepository.deleteAll();
+
+        // Setup Departments
+        hrDepartment = Department.builder()
+                .name("HR")
+                .build();
+        itDepartment = Department.builder()
+                .name("IT")
+                .build();
+
+        departmentRepository.save(hrDepartment);
+        departmentRepository.save(itDepartment);
+
+        // Setup Employees
+        alice = Employee.builder()
+                .name("Alice")
+                .email("alice@example.com")
+                .department(hrDepartment)
+                .build();
+        bob = Employee.builder()
+                .name("Bob")
+                .email("bob@example.com")
+                .department(itDepartment)
+                .build();
+
+        employeeRepository.save(alice);
+        employeeRepository.save(bob);
+
+        // Keep bi-directional relationship in sync in-memory
+        hrDepartment.getEmployees().add(alice);
+        itDepartment.getEmployees().add(bob);
+    }
+
+    @Test
+    void testCreateAndFindDepartment() {
+        Department finance = Department.builder()
+                .name("Finance")
+                .build();
+        Department saved = departmentRepository.save(finance);
+
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getName()).isEqualTo("Finance");
+
+        Optional<Department> found = departmentRepository.findById(saved.getId());
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("Finance");
+    }
+
+    @Test
+    void testFindDepartmentByName() {
+        Optional<Department> found = departmentRepository.findByName("HR");
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("HR");
+
+        Optional<Department> notFound = departmentRepository.findByName("NonExistent");
+        assertThat(notFound).isEmpty();
+    }
+
+    @Test
+    void testFindEmployeeByEmail() {
+        Optional<Employee> found = employeeRepository.findByEmail("alice@example.com");
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("Alice");
+
+        Optional<Employee> notFound = employeeRepository.findByEmail("nonexistent@example.com");
+        assertThat(notFound).isEmpty();
+    }
+
+    @Test
+    void testFindEmployeesByDepartmentName() {
+        List<Employee> hrEmployees = employeeRepository.findByDepartmentName("HR");
+        assertThat(hrEmployees).hasSize(1);
+        assertThat(hrEmployees.get(0).getName()).isEqualTo("Alice");
+
+        List<Employee> itEmployees = employeeRepository.findByDepartmentName("IT");
+        assertThat(itEmployees).hasSize(1);
+        assertThat(itEmployees.get(0).getName()).isEqualTo("Bob");
+    }
+
+    @Test
+    void testFindEmployeesByName() {
+        List<Employee> found = employeeRepository.findByName("Alice");
+        assertThat(found).hasSize(1);
+        assertThat(found.get(0).getEmail()).isEqualTo("alice@example.com");
+    }
+
+    @Test
+    void testFindEmployeesByDepartmentId() {
+        List<Employee> hrEmployees = employeeRepository.findByDepartmentId(hrDepartment.getId());
+        assertThat(hrEmployees).hasSize(1);
+        assertThat(hrEmployees.get(0).getName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void testUpdateEmployee() {
+        alice.setName("Alice Cooper");
+        Employee updated = employeeRepository.save(alice);
+        assertThat(updated.getName()).isEqualTo("Alice Cooper");
+
+        Optional<Employee> found = employeeRepository.findById(alice.getId());
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("Alice Cooper");
+    }
+
+    @Test
+    void testDeleteEmployee() {
+        employeeRepository.delete(alice);
+        Optional<Employee> found = employeeRepository.findById(alice.getId());
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    void testFindByNameContaining() {
+        List<Employee> results = employeeRepository.findByNameContaining("li");
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void testFindByEmailEndingWith() {
+        List<Employee> results = employeeRepository.findByEmailEndingWith("example.com");
+        assertThat(results).hasSize(2);
+    }
+
+    @Test
+    void testFindEmployeesByDeptName() {
+        List<Employee> results = employeeRepository.findEmployeesByDeptName("HR");
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void testFindByEmailNative() {
+        Optional<Employee> result = employeeRepository.findByEmailNative("bob@example.com");
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo("Bob");
+    }
+
+    @Test
+    void testFindByEmailNamed() {
+        List<Employee> results = employeeRepository.findByEmailNamed("alice@example.com");
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void testFindByDepartmentNamed() {
+        List<Employee> results = employeeRepository.findByDepartmentNamed(hrDepartment.getId());
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void testFindByNameContainingIgnoreCase() {
+        List<Department> results = departmentRepository.findByNameContainingIgnoreCase("it");
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("IT");
+    }
+
+    @Test
+    void testFindDepartmentsWithMinEmployees() {
+        List<Department> results = departmentRepository.findDepartmentsWithMinEmployees(1);
+        assertThat(results).hasSize(2);
+
+        List<Department> noResults = departmentRepository.findDepartmentsWithMinEmployees(2);
+        assertThat(noResults).isEmpty();
+    }
+
+    @Test
+    void testFindDepartmentByNameNamed() {
+        Optional<Department> result = departmentRepository.findByNameNamed("HR");
+        assertThat(result).isPresent();
+        assertThat(result.get().getName()).isEqualTo("HR");
+    }
+
+    @Test
+    void testFindAllPaginatedAndSorted() {
+        Employee charlie = Employee.builder()
+                .name("Charlie")
+                .email("charlie@example.com")
+                .department(itDepartment)
+                .build();
+        employeeRepository.save(charlie);
+
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("name").ascending());
+        Page<Employee> page = employeeRepository.findAll(pageable);
+
+        assertThat(page.getTotalElements()).isEqualTo(3);
+        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(page.getContent()).hasSize(2);
+        assertThat(page.getContent().get(0).getName()).isEqualTo("Alice");
+        assertThat(page.getContent().get(1).getName()).isEqualTo("Bob");
+
+        Pageable pageable2 = PageRequest.of(1, 2, Sort.by("name").ascending());
+        Page<Employee> page2 = employeeRepository.findAll(pageable2);
+        assertThat(page2.getContent()).hasSize(1);
+        assertThat(page2.getContent().get(0).getName()).isEqualTo("Charlie");
+    }
+
+    @Test
+    void testFindByNameContainingPaginatedAndSorted() {
+        Employee charlie = Employee.builder()
+                .name("Charlie")
+                .email("charlie@example.com")
+                .department(itDepartment)
+                .build();
+        Employee dave = Employee.builder()
+                .name("Dave")
+                .email("dave@example.com")
+                .department(hrDepartment)
+                .build();
+        employeeRepository.save(charlie);
+        employeeRepository.save(dave);
+
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("name").descending());
+        Page<Employee> page = employeeRepository.findByNameContaining("e", pageable);
+
+        assertThat(page.getTotalElements()).isEqualTo(3); // Alice, Charlie, Dave
+        assertThat(page.getContent().get(0).getName()).isEqualTo("Dave");
+        assertThat(page.getContent().get(1).getName()).isEqualTo("Charlie");
+    }
+
+    @Test
+    void testFindByDepartmentNamePaginatedAndSorted() {
+        Employee charlie = Employee.builder()
+                .name("Charlie")
+                .email("charlie@example.com")
+                .department(itDepartment)
+                .build();
+        Employee dave = Employee.builder()
+                .name("Dave")
+                .email("dave@example.com")
+                .department(hrDepartment)
+                .build();
+        employeeRepository.save(charlie);
+        employeeRepository.save(dave);
+
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("name").ascending());
+        Page<Employee> page = employeeRepository.findByDepartmentName("HR", pageable);
+
+        assertThat(page.getTotalElements()).isEqualTo(2);
+        assertThat(page.getContent().get(0).getName()).isEqualTo("Alice");
+        assertThat(page.getContent().get(1).getName()).isEqualTo("Dave");
+    }
+
+    @Test
+    void testEmployeeClosedProjection() {
+        List<EmployeeProjection> projected = employeeRepository.findProjectedByDepartmentId(hrDepartment.getId());
+        assertThat(projected).hasSize(1);
+        assertThat(projected.get(0).getName()).isEqualTo("Alice");
+        assertThat(projected.get(0).getEmail()).isEqualTo("alice@example.com");
+    }
+
+    @Test
+    void testEmployeeOpenProjection() {
+        List<EmployeeDetailProjection> projected = employeeRepository.findDetailedProjectedByDepartmentId(hrDepartment.getId());
+        assertThat(projected).hasSize(1);
+        assertThat(projected.get(0).getName()).isEqualTo("Alice");
+        assertThat(projected.get(0).getFullNameWithDept()).isEqualTo("Alice - HR");
+    }
+
+    @Test
+    void testEmployeeDtoProjection() {
+        List<EmployeeDto> projected = employeeRepository.findEmployeeDtosByDepartmentId(hrDepartment.getId());
+        assertThat(projected).hasSize(1);
+        assertThat(projected.get(0).name()).isEqualTo("Alice");
+        assertThat(projected.get(0).email()).isEqualTo("alice@example.com");
+        assertThat(projected.get(0).departmentName()).isEqualTo("HR");
+    }
+
+    @Test
+    void testDepartmentProjection() {
+        List<DepartmentProjection> projected = departmentRepository.findProjectedByName("HR");
+        assertThat(projected).hasSize(1);
+        assertThat(projected.get(0).getName()).isEqualTo("HR");
+        assertThat(projected.get(0).getEmployeeCount()).isEqualTo(1);
+    }
+}
