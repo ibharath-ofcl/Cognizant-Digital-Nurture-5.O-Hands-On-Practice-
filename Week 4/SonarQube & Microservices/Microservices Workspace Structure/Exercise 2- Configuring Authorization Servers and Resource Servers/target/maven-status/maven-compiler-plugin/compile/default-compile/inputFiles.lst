@@ -1,0 +1,5 @@
+/Users/bharathbodduvenkata/SonarQube & Microservices/Exercise 2- Configuring Authorization Servers and Resource Servers/src/main/java/com/cognizant/oauth2resourceserver/OAuth2ResourceServerApplication.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Exercise 2- Configuring Authorization Servers and Resource Servers/src/main/java/com/cognizant/oauth2resourceserver/config/ResourceServerConfig.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Exercise 2- Configuring Authorization Servers and Resource Servers/src/main/java/com/cognizant/oauth2resourceserver/controller/SecureController.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Exercise 2- Configuring Authorization Servers and Resource Servers/src/main/java/com/cognizant/oauth2resourceserver/exception/ErrorResponse.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Exercise 2- Configuring Authorization Servers and Resource Servers/src/main/java/com/cognizant/oauth2resourceserver/exception/GlobalExceptionHandler.java

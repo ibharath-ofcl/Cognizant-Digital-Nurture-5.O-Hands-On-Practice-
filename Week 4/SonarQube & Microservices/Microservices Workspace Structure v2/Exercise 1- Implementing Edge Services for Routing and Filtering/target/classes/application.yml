@@ -1,0 +1,71 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: edge-service
+
+  cloud:
+    gateway:
+      routes:
+        # Route 1: Example Org Route
+        # Illustrates: Path Predicate and basic forwarding
+        - id: example_route
+          uri: http://example.org
+          predicates:
+            - Path=/example/**
+          filters:
+            # Strip the "/example" prefix when forwarding so that request matches example.org's path
+            - StripPrefix=1
+            - AddRequestHeader=X-Example-Request, GatewayVal
+            - AddResponseHeader=X-Example-Response, GatewayVal
+
+        # Route 2: Employee Service Route
+        # Illustrates: Path, Method, and custom RequestTrackingFilter configuration
+        - id: employee_route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/employee/**
+            - Method=GET,POST,PUT,DELETE
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Source, Gateway-API
+            - AddResponseHeader=X-Gateway-Processed, True
+            # We can also add Retry or CircuitBreaker here if needed, but since we don't have resilient plugins active, we keep it standard.
+
+        # Route 3: Advanced Predicates and Filters Showcase Route
+        # Demonstrates: Host, Header, Query, and Cookie Predicates
+        - id: advanced_route
+          uri: http://httpbin.org
+          predicates:
+            - Path=/showcase/**
+            - Header=X-Gateway-Test, ^Showcase.*$
+            - Cookie=user-type, premium
+            - Query=debug, true
+            - Host=**.cognizant.com
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=X-Showcase-Header, ShowcaseValue
+            - RemoveRequestHeader=Cookie
+            - SetPath=/get
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.cognizant.edgeservice: DEBUG
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: INFO
+
+# Spring Boot Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: always

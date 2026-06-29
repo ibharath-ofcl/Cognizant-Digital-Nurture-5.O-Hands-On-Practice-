@@ -1,0 +1,10 @@
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/UserServiceApplication.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/controller/UserController.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/dto/UserDto.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/entity/User.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/exception/ErrorResponse.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/exception/GlobalExceptionHandler.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/exception/ResourceNotFoundException.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/repository/UserRepository.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/service/UserService.java
+/Users/bharathbodduvenkata/SonarQube & Microservices/Microservices Setup Exercises/ User and Order Management System/user-service/src/main/java/com/cognizant/userservice/service/UserServiceImpl.java

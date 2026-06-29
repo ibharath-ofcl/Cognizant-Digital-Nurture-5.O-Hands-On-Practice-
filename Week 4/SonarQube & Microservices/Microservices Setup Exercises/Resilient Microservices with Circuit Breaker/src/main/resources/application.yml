@@ -1,0 +1,59 @@
+server:
+  # The port on which the microservice runs
+  port: 8081
+
+spring:
+  application:
+    # Service name used for service discovery and logging identification
+    name: payment-service
+
+# Spring Boot Actuator settings to expose management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        # Expose relevant endpoints for health, metrics, circuit breaker status, and prometheus
+        include: health,metrics,circuitbreakers,prometheus
+  endpoint:
+    health:
+      # Show full details on health checks (instead of just UP/DOWN)
+      show-details: always
+  health:
+    circuitbreakers:
+      # Expose Resilience4j circuit breakers status in the actuator health indicators list
+      enabled: true
+
+# Resilience4j configurations
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentService:
+        # Register this instance's status in the health endpoint
+        registerHealthIndicator: true
+        # Sliding window type used to record execution outcomes (COUNT_BASED or TIME_BASED)
+        slidingWindowType: COUNT_BASED
+        # Size of the sliding window (records the last 10 calls)
+        slidingWindowSize: 10
+        # Minimum calls required to evaluate failure/slow-call rates (prevents early open)
+        minimumNumberOfCalls: 5
+        # Percentage threshold above which the circuit transitions to OPEN (50%)
+        failureRateThreshold: 50
+        # Percentage threshold above which slow calls transition the circuit to OPEN
+        slowCallRateThreshold: 50
+        # Time duration threshold above which a call is marked as slow (2000ms = 2s)
+        slowCallDurationThreshold: 2000ms
+        # Duration that the circuit breaker remains OPEN before moving to HALF_OPEN
+        waitDurationInOpenState: 10000ms # 10 seconds
+        # Number of permitted calls in HALF_OPEN to check if downstream is healthy
+        permittedNumberOfCallsInHalfOpenState: 3
+        # Enable auto transition from OPEN to HALF_OPEN state after wait duration passes
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    # Enable debug logs for our service to trace calls and fallback executions
+    com.example.payment: DEBUG
+    # Enable logging of Resilience4j events
+    io.github.resilience4j: DEBUG

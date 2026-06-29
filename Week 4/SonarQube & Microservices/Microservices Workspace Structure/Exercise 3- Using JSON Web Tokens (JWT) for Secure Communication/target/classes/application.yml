@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: jwt-authentication
+
+# JWT Properties
+jwt:
+  # Base64 encoded HMAC-SHA256 secret key. Must be at least 256 bits (32 bytes).
+  # Below key is a Base64-encoded string of: "cognizant-exercise-3-jwt-authentication-secure-secret-key-development"
+  secret: Y29nbml6YW50LWV4ZXJjaXNlLTMtand0LWF1dGhlbnRpY2F0aW9uLXNlY3VyZS1zZWNyZXQta2V5LWRldmVsb3BtZW50
+  # Token validity period in milliseconds: 3600000 ms = 1 hour
+  expiration: 3600000
+
+logging:
+  level:
+    root: INFO
+    com.cognizant.jwtauthentication: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

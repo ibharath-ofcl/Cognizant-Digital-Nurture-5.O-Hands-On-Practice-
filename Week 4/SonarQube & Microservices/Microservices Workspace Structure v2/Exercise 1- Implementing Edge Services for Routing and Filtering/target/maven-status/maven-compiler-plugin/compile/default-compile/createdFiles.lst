@@ -1,0 +1,5 @@
+com/cognizant/edgeservice/config/GatewayRouteConfig.class
+com/cognizant/edgeservice/EdgeServiceApplication.class
+com/cognizant/edgeservice/filter/RequestTrackingFilter.class
+com/cognizant/edgeservice/exception/GlobalExceptionHandler.class
+com/cognizant/edgeservice/filter/LoggingFilter.class

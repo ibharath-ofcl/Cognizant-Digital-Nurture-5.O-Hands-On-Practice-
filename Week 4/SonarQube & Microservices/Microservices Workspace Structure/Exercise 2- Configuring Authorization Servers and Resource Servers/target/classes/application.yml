@@ -1,0 +1,23 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: oauth2-resource-server
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # The provider issuer URI that issued the JWTs. The Resource Server validates the 'iss' claim against this.
+          issuer-uri: https://issuer.example.com
+          # The JSON Web Key Set (JWKS) URI. Providing this directly prevents the application from making external
+          # OIDC configuration discovery calls at boot time, making the application launch faster and run offline/locally.
+          jwk-set-uri: https://issuer.example.com/.well-known/jwks.json
+
+logging:
+  level:
+    root: INFO
+    com.cognizant: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

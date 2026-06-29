@@ -1,0 +1,76 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # Enable actuator gateway endpoint
+      actuator:
+        verbose: true
+      routes:
+        # Route 1: Customer Service Routing
+        - id: customer-service-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/customer/**
+          filters:
+            # Rewrite /customer/profile to /profile
+            - RewritePath=/customer/(?<segment>.*), /$\{segment}
+            # Custom Rate Limiter: limit to 5 requests per 60 seconds (1 minute) per client
+            - name: CustomRateLimiter
+              args:
+                capacity: 5
+                replenishRate: 5
+                periodSeconds: 60
+            # Custom Caching filter: caches GET responses in 'customerCache'
+            - name: Caching
+              args:
+                cacheName: customerCache
+
+        # Route 2: Billing Service Routing
+        - id: billing-service-route
+          uri: http://localhost:8082
+          predicates:
+            - Path=/billing/**
+          filters:
+            # Rewrite /billing/payment to /payment
+            - RewritePath=/billing/(?<segment>.*), /$\{segment}
+            # Custom Rate Limiter: limit to 5 requests per 60 seconds per client
+            - name: CustomRateLimiter
+              args:
+                capacity: 5
+                replenishRate: 5
+                periodSeconds: 60
+
+# Spring Cache configuration (Caffeine provider)
+spring:
+  cache:
+    type: caffeine
+    cache-names:
+      - customerCache
+    caffeine:
+      spec: expireAfterWrite=10m,maximumSize=500
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway, loggers
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: always
+
+# Logging Levels
+logging:
+  level:
+    root: INFO
+    com.example.gateway: DEBUG
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
+    reactor.netty: INFO
